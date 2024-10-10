@@ -72,7 +72,7 @@ project(':sponge') {
         api project(':core')
     }
 }
-
+/*
 subprojects {
     apply plugin: 'signing'
     apply plugin: 'maven-publish'
@@ -142,4 +142,4 @@ subprojects {
     signing {
         sign publishing.publications.mavenJava
     }
-}
+}*/
