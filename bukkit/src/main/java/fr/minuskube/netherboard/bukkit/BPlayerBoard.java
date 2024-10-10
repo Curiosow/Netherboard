@@ -284,7 +284,7 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
         if(this.deleted)
             return;
 
-        Netherboard.instance().removeBoard(player);
+        Netherboard.instance().deleteBoard(player, name);
 
         sendObjective(this.objective, ObjectiveMode.REMOVE);
         sendObjective(this.buffer, ObjectiveMode.REMOVE);

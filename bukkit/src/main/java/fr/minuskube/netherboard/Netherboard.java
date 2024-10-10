@@ -18,12 +18,12 @@ public class Netherboard {
 
     private static Netherboard instance;
 
-    private final Map<Player, BPlayerBoard> boards = new HashMap<>();
+    private final Map<Player, Map<String, BPlayerBoard>> boards = new HashMap<>();
 
     private Netherboard() {}
 
     /**
-     * Creates a board to a player.
+     * Creates a board for a player.
      *
      * @param player    the player
      * @param name      the name of the board
@@ -34,7 +34,7 @@ public class Netherboard {
     }
 
     /**
-     * Creates a board to a player, using a predefined scoreboard.
+     * Creates a board for a player, using a predefined scoreboard.
      *
      * @param player        the player
      * @param scoreboard    the scoreboard to use
@@ -42,62 +42,64 @@ public class Netherboard {
      * @return              the newly created board
      */
     public BPlayerBoard createBoard(Player player, Scoreboard scoreboard, String name) {
-        deleteBoard(player);
+        Map<String, BPlayerBoard> playerBoards = boards.computeIfAbsent(player, k -> new HashMap<>());
+        deleteBoard(player, name);
 
         BPlayerBoard board = new BPlayerBoard(player, scoreboard, name);
-
-        boards.put(player, board);
+        playerBoards.put(name, board);
         return board;
     }
 
     /**
-     * Deletes the board of a player.
+     * Deletes a specific board of a player.
+     *
+     * @param player the player
+     * @param name   the name of the board
+     */
+    public void deleteBoard(Player player, String name) {
+        Map<String, BPlayerBoard> playerBoards = boards.get(player);
+        if (playerBoards != null && playerBoards.containsKey(name)) {
+            playerBoards.get(name).delete();
+            playerBoards.remove(name);
+        }
+    }
+
+    /**
+     * Deletes all boards of a player.
      *
      * @param player the player
      */
-    public void deleteBoard(Player player) {
-        if(boards.containsKey(player))
-            boards.get(player).delete();
+    public void deleteAllBoards(Player player) {
+        Map<String, BPlayerBoard> playerBoards = boards.get(player);
+        if (playerBoards != null) {
+            playerBoards.values().forEach(BPlayerBoard::delete);
+            playerBoards.clear();
+        }
     }
 
     /**
-     * Removes the board of a player from the boards map.<br>
-     * <b>WARNING: Do not use this to delete the board of a player!</b>
+     * Gets a specific board of a player.
      *
      * @param player the player
+     * @param name   the name of the board
+     * @return       the player board, or null if the player has no board with the given name
      */
-    public void removeBoard(Player player) {
-        boards.remove(player);
+    public BPlayerBoard getBoard(Player player, String name) {
+        Map<String, BPlayerBoard> playerBoards = boards.get(player);
+        return playerBoards != null ? playerBoards.get(name) : null;
     }
 
     /**
-     * Checks if the player has a board.
+     * Gets all the boards of a player.
      *
      * @param player the player
-     * @return       <code>true</code> if the player has a board, otherwise <code>false</code>
+     * @return       a map of board names to player boards
      */
-    public boolean hasBoard(Player player) {
-        return boards.containsKey(player);
+    public Map<String, BPlayerBoard> getBoards(Player player) {
+        return boards.getOrDefault(player, new HashMap<>());
     }
 
-    /**
-     * Gets the board of a player.
-     *
-     * @param player    the player
-     * @return          the player board, or null if the player has no board
-     */
-    public BPlayerBoard getBoard(Player player) {
-        return boards.get(player);
-    }
-
-    /**
-     * Gets all the boards mapped to their player.
-     * This returns a copy of the current boards map,
-     * thus modifying the given Map will not have any effect on the boards.
-     *
-     * @return a new map with all the player boards
-     */
-    public Map<Player, BPlayerBoard> getBoards() {
+    public Map<Player, Map<String, BPlayerBoard>> getAllBoards() {
         return new HashMap<>(boards);
     }
 
